@@ -86,24 +86,22 @@ class TendBottomNavBar extends StatelessWidget {
 
         // Popping-Out Voice Button (Positioned above footer top border)
         Positioned(
-          top: -20,
+          top: -24,
           child: Container(
-            padding: const EdgeInsets.all(3.5),
-            decoration: BoxDecoration(
+            padding: const EdgeInsets.all(5),
+            decoration: const BoxDecoration(
               color: AppColors.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.espressoDeep.withValues(alpha: 0.16),
-                  blurRadius: 10,
-                  offset: const Offset(0, 3),
+                  color: Color(0x143B2317),
+                  blurRadius: 16,
+                  offset: Offset(0, 4),
                 ),
               ],
             ),
             child: TendVoiceButton(
-              size: 68,
-              state: TendVoiceState.idle,
-              icon: Icons.auto_awesome,
+              size: 74,
               onTap: onVoiceTap,
             ),
           ),

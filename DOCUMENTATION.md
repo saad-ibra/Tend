@@ -382,6 +382,7 @@ When the user consults the coach:
 | **Days Mindful Calendar & Ledger** | Screen, Presentation | **Implemented** | Calendar ledger test passing |
 | **Archived Rhythms & Profile Vault**| Screen, Controller | **Implemented** | Verified in ProfileScreen |
 | **Reflections Badge Wrap Layout** | Presentation Widget | **Implemented** | `Wrap` layout eliminates pixel overflow |
+| **Custom App Launcher Icons** | Assets & Android/iOS Res | **Implemented** | Cropped emblem with adaptive icon support |
 | **Remote Sync Cloud Database** | Proposed Backend Architecture | **Proposed** | REST API contracts documented |
 
 ---
@@ -398,3 +399,4 @@ When the user consults the coach:
 | `1.4.1+6` | 2026-11-20 | Fixed Groq API model routing by updating deprecated model IDs to active high-throughput models (GPT-OSS 120B/20B, Qwen 27B) and upgraded Gemini API multi-part candidate text parsing and Gemini 2.5 Flash fallback sequence. |
 | `1.4.2+7` | 2026-11-20 | Comprehensive error handling and user notification suite: added human-readable HTTP 401/429/404/500 formatting, network timeout/offline detection, interactive dismissible banner in CoachScreen, and background live key validation in ProfileScreen. |
 | `1.5.0+8` | 2026-11-21 | Added full AI conversation session management (save, create, delete, archive, pin to top, rename); relocated model indicator to bottom near text field; wired footer center button to open AI Coach; cleaned header navigation; replaced Feed & Network screens with serene "Coming Soon" states; fixed 1.8px badge overflow in Reflections Journal using adaptive `Wrap`. |
+| `1.5.1+9` | 2026-11-21 | Reverted footer center button appearance to pristine wabi-sabi acoustic petal design without overlay icons; fixed button crash by removing recursive repository calls and adding frame-safe callbacks and navigation guards; added dedicated BackButton in CoachScreen; generated bespoke custom app launcher icons from cropped logo emblem with Android adaptive and iOS icon sets. |

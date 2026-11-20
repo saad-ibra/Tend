@@ -105,6 +105,7 @@ class _MainScaffoldState extends State<MainScaffold> {
           habitController: _habitController,
           checkInController: _checkInController,
         );
+    _coachController.loadConversation();
     _restoreCoachApiKey();
 
     _feedController = widget.feedController ??
@@ -148,7 +149,11 @@ class _MainScaffoldState extends State<MainScaffold> {
     );
   }
 
+  bool _isOpeningCoach = false;
+
   void _openCoach() {
+    if (_isOpeningCoach) return;
+    _isOpeningCoach = true;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => CoachScreen(
@@ -156,7 +161,11 @@ class _MainScaffoldState extends State<MainScaffold> {
           onOpenProfile: _openProfile,
         ),
       ),
-    );
+    ).then((_) {
+      if (mounted) {
+        _isOpeningCoach = false;
+      }
+    });
   }
 
   @override

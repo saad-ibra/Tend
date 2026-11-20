@@ -46,7 +46,11 @@ class CoachController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
 
   Future<void> loadConversation() async {
-    _sessions = await repository.getSessions();
+    try {
+      _sessions = await repository.getSessions();
+    } catch (_) {
+      _sessions = [];
+    }
 
     if (_sessions.isEmpty) {
       final now = DateTime.now();
@@ -64,7 +68,9 @@ class CoachController extends ChangeNotifier {
         updatedAt: now,
         messages: [welcome],
       );
-      await repository.saveSession(defaultSession);
+      try {
+        await repository.saveSession(defaultSession);
+      } catch (_) {}
       _sessions = [defaultSession];
     }
 

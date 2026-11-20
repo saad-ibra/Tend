@@ -47,10 +47,13 @@ class _CoachScreenState extends State<CoachScreen> {
   }
 
   void _onControllerChange() {
-    if (mounted) {
-      setState(() {});
-      _scrollToBottom();
-    }
+    if (!mounted) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+        _scrollToBottom();
+      }
+    });
   }
 
   void _scrollToBottom() {
@@ -493,11 +496,7 @@ class _CoachScreenState extends State<CoachScreen> {
     return Scaffold(
       backgroundColor: AppColors.surface,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.forum_outlined, color: AppColors.onSurface),
-          tooltip: 'Conversations (${widget.controller.activeSessions.length})',
-          onPressed: _showConversationsSheet,
-        ),
+        leading: const BackButton(color: AppColors.onSurface),
         title: GestureDetector(
           onTap: _showConversationsSheet,
           child: Column(
@@ -526,6 +525,11 @@ class _CoachScreenState extends State<CoachScreen> {
           ),
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.forum_outlined, color: AppColors.onSurface),
+            tooltip: 'Conversations (${widget.controller.activeSessions.length})',
+            onPressed: _showConversationsSheet,
+          ),
           IconButton(
             icon: const Icon(Icons.add_comment_outlined, color: AppColors.onSurface),
             tooltip: 'New Conversation',
@@ -593,6 +597,12 @@ class _CoachScreenState extends State<CoachScreen> {
                       Text('Delete Conversation', style: TextStyle(color: Colors.red)),
                     ],
                   ),
+                ),
+              ] else ...[
+                const PopupMenuItem(
+                  value: 'loading',
+                  enabled: false,
+                  child: Text('Loading conversation...'),
                 ),
               ],
             ],

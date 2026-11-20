@@ -16,6 +16,24 @@ class LocalCoachRepository implements CoachRepository {
     return prefs ?? await SharedPreferences.getInstance();
   }
 
+  List<CoachSession> _parseRawSessions(List<String>? rawList) {
+    if (rawList == null || rawList.isEmpty) return [];
+    final sessions = <CoachSession>[];
+    for (final str in rawList) {
+      try {
+        sessions.add(CoachSession.fromJson(jsonDecode(str) as Map<String, dynamic>));
+      } catch (_) {
+        // Skip corrupted entries safely
+      }
+    }
+    sessions.sort((a, b) {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
+      return b.updatedAt.compareTo(a.updatedAt);
+    });
+    return sessions;
+  }
+
   @override
   Future<List<CoachSession>> getSessions() async {
     final sp = await _getPrefs();
@@ -25,9 +43,12 @@ class LocalCoachRepository implements CoachRepository {
       // Check for legacy messages migration
       final legacyList = sp.getStringList(_legacyMessagesKey);
       if (legacyList != null && legacyList.isNotEmpty) {
-        final legacyMessages = legacyList
-            .map((str) => CoachMessage.fromJson(jsonDecode(str) as Map<String, dynamic>))
-            .toList();
+        final legacyMessages = <CoachMessage>[];
+        for (final str in legacyList) {
+          try {
+            legacyMessages.add(CoachMessage.fromJson(jsonDecode(str) as Map<String, dynamic>));
+          } catch (_) {}
+        }
         final defaultSession = CoachSession(
           id: 'session_legacy',
           title: 'Initial Reflection',
@@ -35,24 +56,17 @@ class LocalCoachRepository implements CoachRepository {
           updatedAt: legacyMessages.isNotEmpty ? legacyMessages.last.timestamp : DateTime.now(),
           messages: legacyMessages,
         );
-        await saveSession(defaultSession);
+        // Persist directly and remove legacy key without calling saveSession to prevent recursion
+        await _persistSessions([defaultSession], sp);
+        try {
+          await sp.remove(_legacyMessagesKey);
+        } catch (_) {}
         return [defaultSession];
       }
       return [];
     }
 
-    final sessions = rawList
-        .map((str) => CoachSession.fromJson(jsonDecode(str) as Map<String, dynamic>))
-        .toList();
-
-    // Sort: pinned first, then by updatedAt descending
-    sessions.sort((a, b) {
-      if (a.isPinned && !b.isPinned) return -1;
-      if (!a.isPinned && b.isPinned) return 1;
-      return b.updatedAt.compareTo(a.updatedAt);
-    });
-
-    return sessions;
+    return _parseRawSessions(rawList);
   }
 
   @override
@@ -68,7 +82,8 @@ class LocalCoachRepository implements CoachRepository {
   @override
   Future<void> saveSession(CoachSession session) async {
     final sp = await _getPrefs();
-    final sessions = await getSessions();
+    final rawList = sp.getStringList(_sessionStorageKey);
+    final sessions = _parseRawSessions(rawList);
     final idx = sessions.indexWhere((s) => s.id == session.id);
     if (idx >= 0) {
       sessions[idx] = session;
@@ -81,7 +96,8 @@ class LocalCoachRepository implements CoachRepository {
   @override
   Future<void> deleteSession(String id) async {
     final sp = await _getPrefs();
-    final sessions = await getSessions();
+    final rawList = sp.getStringList(_sessionStorageKey);
+    final sessions = _parseRawSessions(rawList);
     sessions.removeWhere((s) => s.id == id);
     await _persistSessions(sessions, sp);
   }
@@ -89,7 +105,8 @@ class LocalCoachRepository implements CoachRepository {
   @override
   Future<void> togglePinSession(String id) async {
     final sp = await _getPrefs();
-    final sessions = await getSessions();
+    final rawList = sp.getStringList(_sessionStorageKey);
+    final sessions = _parseRawSessions(rawList);
     final idx = sessions.indexWhere((s) => s.id == id);
     if (idx >= 0) {
       sessions[idx] = sessions[idx].copyWith(isPinned: !sessions[idx].isPinned);
@@ -100,7 +117,8 @@ class LocalCoachRepository implements CoachRepository {
   @override
   Future<void> toggleArchiveSession(String id) async {
     final sp = await _getPrefs();
-    final sessions = await getSessions();
+    final rawList = sp.getStringList(_sessionStorageKey);
+    final sessions = _parseRawSessions(rawList);
     final idx = sessions.indexWhere((s) => s.id == id);
     if (idx >= 0) {
       sessions[idx] = sessions[idx].copyWith(isArchived: !sessions[idx].isArchived);
@@ -118,44 +136,30 @@ class LocalCoachRepository implements CoachRepository {
   @override
   Future<List<CoachMessage>> getMessages() async {
     final sessions = await getSessions();
-    if (sessions.isEmpty) return [];
-    return sessions.first.messages;
+    if (sessions.isNotEmpty) return sessions.first.messages;
+    return [];
   }
 
   @override
   Future<void> saveMessage(CoachMessage message) async {
     final sessions = await getSessions();
-    if (sessions.isEmpty) {
-      final now = DateTime.now();
-      final newSession = CoachSession(
-        id: 'session_${now.millisecondsSinceEpoch}',
-        title: message.text.length > 30 ? '${message.text.substring(0, 30)}...' : message.text,
-        createdAt: now,
-        updatedAt: now,
-        messages: [message],
-      );
-      await saveSession(newSession);
-    } else {
-      final first = sessions.first;
-      final updatedList = List<CoachMessage>.from(first.messages)..add(message);
-      final updatedSession = first.copyWith(
-        messages: updatedList,
-        updatedAt: DateTime.now(),
-      );
-      await saveSession(updatedSession);
+    if (sessions.isNotEmpty) {
+      final s = sessions.first;
+      final updated = s.copyWith(messages: List.from(s.messages)..add(message));
+      await saveSession(updated);
     }
   }
 
   @override
   Future<void> updateMessage(CoachMessage message) async {
     final sessions = await getSessions();
-    for (final session in sessions) {
-      final idx = session.messages.indexWhere((m) => m.id == message.id);
+    if (sessions.isNotEmpty) {
+      final s = sessions.first;
+      final mList = List<CoachMessage>.from(s.messages);
+      final idx = mList.indexWhere((m) => m.id == message.id);
       if (idx >= 0) {
-        final updatedList = List<CoachMessage>.from(session.messages);
-        updatedList[idx] = message;
-        await saveSession(session.copyWith(messages: updatedList));
-        break;
+        mList[idx] = message;
+        await saveSession(s.copyWith(messages: mList));
       }
     }
   }

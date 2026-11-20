@@ -19,7 +19,8 @@ Tend is a daily habit and rhythm application rooted in Japanese *wabi-sabi* aest
 * **Responsive Layout:** Adaptive tag wrapping prevents viewport overflow across all screen densities.
 
 ### 3. Multi-Provider AI Habit Coach (Center Footer Action)
-* **One-Tap Bottom Access:** The popping-out central navigation button opens the AI Habit Coach instantly from anywhere in the app.
+* **Pristine Wabi-Sabi Center Button:** The central elevated floral acoustic button opens the AI Habit Coach with tactile breathing animations and no distracting overlay icons.
+* **Navigation & Stability:** Includes debounced navigation safety, preloaded conversations, and complete back navigation controls to seamlessly return to Home.
 * **Multi-Session Management:** Save conversations, start new chats, switch between active sessions, pin important threads to top, archive completed reflections, rename, and delete sessions.
 * **Context-Aware Coaching:** Synthesizes actual completion rates, streaks, and mood data into empathetic, actionable guidance.
 * **Actionable Proposals:** Generates structured habit mutations (`create_habit` or `modify_habit`) requiring human confirmation before execution.
@@ -29,6 +30,11 @@ Tend is a daily habit and rhythm application rooted in Japanese *wabi-sabi* aest
   2. *Google Gemini Cloud:* Full support for free and paid Gemini 1.5/2.0 Flash and Pro keys with auto model sequencing.
   3. *On-Device Deterministic Engine:* Offline heuristic providing instant guidance without connectivity or credentials.
 * **Clean JSON Parser:** Automatically removes markdown backticks and prefaces returned by LLMs to prevent parsing crashes.
+
+### 4. Custom App Icon
+* **Custom Brand Emblem:** Extracted and cropped from Tend's brand emblem (removing the 'tend' text) on a serene `#FBF9F5` surface.
+* **Adaptive Android Icons:** Full adaptive icon support (`mipmap-anydpi-v26`) with separate foreground emblem and background layers across all densities (mdpi to xxxhdpi), plus legacy and round icon support.
+* **iOS App Icons:** Generated complete iOS icon set matching App Store marketing specifications.
 
 ### 4. Mindful Readings (Feed — Coming Soon)
 * Serene placeholder reserved for curated contemplative essays and seasonal literature without social media clutter.
