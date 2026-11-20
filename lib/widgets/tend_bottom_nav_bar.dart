@@ -6,13 +6,13 @@ import 'tend_voice_button.dart';
 class TendBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTabSelected;
-  final ValueChanged<TendVoiceState>? onVoiceStateChanged;
+  final VoidCallback? onVoiceTap;
 
   const TendBottomNavBar({
     super.key,
     required this.currentIndex,
     required this.onTabSelected,
-    this.onVoiceStateChanged,
+    this.onVoiceTap,
   });
 
   @override
@@ -86,23 +86,25 @@ class TendBottomNavBar extends StatelessWidget {
 
         // Popping-Out Voice Button (Positioned above footer top border)
         Positioned(
-          top: -24,
+          top: -20,
           child: Container(
-            padding: const EdgeInsets.all(5),
-            decoration: const BoxDecoration(
+            padding: const EdgeInsets.all(3.5),
+            decoration: BoxDecoration(
               color: AppColors.surface,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: Color(0x143B2317),
-                  blurRadius: 16,
-                  offset: Offset(0, 4),
+                  color: AppColors.espressoDeep.withValues(alpha: 0.16),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: TendVoiceButton(
-              size: 74,
-              onStateChanged: onVoiceStateChanged,
+              size: 68,
+              state: TendVoiceState.idle,
+              icon: Icons.auto_awesome,
+              onTap: onVoiceTap,
             ),
           ),
         ),

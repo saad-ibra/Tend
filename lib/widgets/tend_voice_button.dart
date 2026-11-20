@@ -11,15 +11,19 @@ enum TendVoiceState {
 class TendVoiceButton extends StatefulWidget {
   final TendVoiceState? state;
   final ValueChanged<TendVoiceState>? onStateChanged;
+  final VoidCallback? onTap;
   final double size;
   final double? simulatedAmplitude;
+  final IconData? icon;
 
   const TendVoiceButton({
     super.key,
     this.state,
     this.onStateChanged,
+    this.onTap,
     this.size = 68.0,
     this.simulatedAmplitude,
+    this.icon,
   });
 
   @override
@@ -98,28 +102,23 @@ class _TendVoiceButtonState extends State<TendVoiceButton>
   }
 
   void _handleTap() {
+    if (widget.onTap != null) {
+      widget.onTap!();
+      return;
+    }
+
     final nextState = switch (_effectiveState) {
       TendVoiceState.idle => TendVoiceState.listening,
       TendVoiceState.listening => TendVoiceState.processing,
       TendVoiceState.processing => TendVoiceState.idle,
     };
 
-    setState(() {
-      _internalState = nextState;
-    });
-    widget.onStateChanged?.call(nextState);
-
-    // If transitioned to processing, auto-resolve to idle after 2.4s for demonstration
-    if (nextState == TendVoiceState.processing && widget.state == null) {
-      Future.delayed(const Duration(milliseconds: 2400), () {
-        if (mounted && _internalState == TendVoiceState.processing) {
-          setState(() {
-            _internalState = TendVoiceState.idle;
-          });
-          widget.onStateChanged?.call(TendVoiceState.idle);
-        }
+    if (widget.state == null) {
+      setState(() {
+        _internalState = nextState;
       });
     }
+    widget.onStateChanged?.call(nextState);
   }
 
   @override
@@ -143,8 +142,8 @@ class _TendVoiceButtonState extends State<TendVoiceButton>
         onTapCancel: () => _pressController.reverse(),
         behavior: HitTestBehavior.opaque,
         child: SizedBox(
-          width: widget.size + 14,
-          height: widget.size + 14,
+          width: widget.size,
+          height: widget.size,
           child: Center(
             child: AnimatedBuilder(
               animation: Listenable.merge([
@@ -211,15 +210,26 @@ class _TendVoiceButtonState extends State<TendVoiceButton>
                       ],
                     ),
                     child: ClipOval(
-                      child: CustomPaint(
-                        size: Size(widget.size, widget.size),
-                        painter: _TendAcousticMarkPainter(
-                          state: state,
-                          idleBreath: idleBreath,
-                          amplitude: amplitude,
-                          processingAngle: processingAngle,
-                          pressFactor: pressFactor,
-                        ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CustomPaint(
+                            size: Size(widget.size, widget.size),
+                            painter: _TendAcousticMarkPainter(
+                              state: state,
+                              idleBreath: idleBreath,
+                              amplitude: amplitude,
+                              processingAngle: processingAngle,
+                              pressFactor: pressFactor,
+                            ),
+                          ),
+                          if (widget.icon != null)
+                            Icon(
+                              widget.icon,
+                              color: Colors.white,
+                              size: widget.size * 0.42,
+                            ),
+                        ],
                       ),
                     ),
                   ),

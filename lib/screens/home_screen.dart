@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../controllers/checkin_controller.dart';
 import '../controllers/habit_controller.dart';
 import '../models/habit.dart';
 import '../theme/app_colors.dart';
@@ -8,13 +9,16 @@ import '../widgets/habit_archive_sheet.dart';
 import '../widgets/habit_form_sheet.dart';
 import '../widgets/habit_item_tile.dart';
 import '../widgets/weekly_progress_bar.dart';
+import 'daily_checkin_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final HabitController controller;
+  final CheckInController? checkInController;
 
   const HomeScreen({
     super.key,
     required this.controller,
+    this.checkInController,
   });
 
   @override
@@ -28,10 +32,12 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     controller.addListener(_onControllerUpdate);
+    widget.checkInController?.addListener(_onControllerUpdate);
   }
 
   @override
   void dispose() {
+    widget.checkInController?.removeListener(_onControllerUpdate);
     controller.removeListener(_onControllerUpdate);
     super.dispose();
   }
@@ -238,6 +244,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: 18),
 
+          // Daily Mindful Check-in Banner (above weekly rhythm)
+          if (widget.checkInController != null) ...[
+            _buildCheckInBanner(),
+            const SizedBox(height: 16),
+          ],
+
           // Weekly Progress Bar Ribbon
           WeeklyProgressBar(
             days: weekly,
@@ -348,6 +360,103 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCheckInBanner() {
+    final checkInCtrl = widget.checkInController!;
+    final today = checkInCtrl.todayCheckIn;
+
+    return InkWell(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => DailyCheckInScreen(controller: checkInCtrl),
+          ),
+        );
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: today != null
+                ? AppColors.caramelMid.withValues(alpha: 0.3)
+                : AppColors.borderSubtle,
+          ),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x063B2317),
+              blurRadius: 10,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: today != null
+                    ? AppColors.caramelCream.withValues(alpha: 0.7)
+                    : AppColors.surfaceContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                today != null ? Icons.spa_outlined : Icons.wb_twilight_outlined,
+                size: 20,
+                color: today != null ? AppColors.primary : AppColors.outline,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        today != null ? 'Inner Weather' : 'Daily Check-in',
+                        style: AppTypography.labelMd(
+                          color: today != null ? AppColors.primary : AppColors.onSurface,
+                        ).copyWith(fontWeight: FontWeight.w600),
+                      ),
+                      if (today != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.secondaryContainer.withValues(alpha: 0.5),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'Logged',
+                            style: AppTypography.labelSm(color: AppColors.onSecondaryContainer)
+                                .copyWith(fontSize: 9),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    today != null
+                        ? '${today.moodLabel} • ${today.energyLabel}${today.note.isNotEmpty ? " — \"${today.note}\"" : ""}'
+                        : 'How is your mood and energy today? Tap to check in.',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTypography.bodySm(color: AppColors.outline),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 20, color: AppColors.outline),
+          ],
+        ),
       ),
     );
   }

@@ -22,6 +22,8 @@ class HabitController extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   DateTime get selectedDate => _selectedDate;
 
+  List<Habit> get habits => List.unmodifiable(_habits);
+
   List<Habit> get activeHabits =>
       _habits.where((h) => !h.isArchived).toList();
 
@@ -46,6 +48,10 @@ class HabitController extends ChangeNotifier {
     final targetDate = date ?? _selectedDate;
     final dateKey = HabitCompletion.formatDateKey(targetDate);
     return _completions.any((c) => c.habitId == habitId && c.dateKey == dateKey);
+  }
+
+  List<Habit> getCompletedHabitsForDate(DateTime date) {
+    return _habits.where((h) => isHabitCompleted(h.id, date)).toList();
   }
 
   /// Calculates the current unbroken streak of scheduled completions for [habitId].

@@ -4,11 +4,13 @@ import '../theme/app_colors.dart';
 class AppHeader extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onSearchTap;
   final VoidCallback? onProfileTap;
+  final VoidCallback? onCoachTap;
 
   const AppHeader({
     super.key,
     this.onSearchTap,
     this.onProfileTap,
+    this.onCoachTap,
   });
 
   @override
