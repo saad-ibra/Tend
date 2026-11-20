@@ -2,6 +2,10 @@
 
 Tend is a daily habit and rhythm application rooted in Japanese *wabi-sabi* aesthetics and Scandinavian functionalism. Built with Flutter, it emphasizes calm, deliberate attention and gentle consistency over aggressive gamification and vanity metrics.
 
+* **GitHub Repository:** [https://github.com/saad-ibra/Tend](https://github.com/saad-ibra/Tend)
+* **Tested AI Provider:** Groq Cloud (`llama-3.3-70b-versatile` / `llama-3.1-8b-instant`) — verified end-to-end with structured JSON outputs.
+* **Fallback AI Providers:** Google Gemini (`gemini-1.5-flash` / `gemini-2.0-flash`) and an on-device deterministic heuristics engine.
+
 ---
 
 ## Key Features
@@ -26,8 +30,8 @@ Tend is a daily habit and rhythm application rooted in Japanese *wabi-sabi* aest
 * **Actionable Proposals:** Generates structured habit mutations (`create_habit` or `modify_habit`) requiring human confirmation before execution.
 * **Bottom Model Indicator:** Active AI model badge (`Groq Llama 3.3 70B`, `Gemini 1.5 Flash`, or `Local Intelligence`) sits directly above the message text field with one-tap configuration access.
 * **Three-Tier Inference Engine:**
-  1. *Groq Cloud (Recommended):* Ultra-fast Llama 3.3 70B inference with high throughput and instant free keys.
-  2. *Google Gemini Cloud:* Full support for free and paid Gemini 1.5/2.0 Flash and Pro keys with auto model sequencing.
+  1. *Groq Cloud (Tested & Recommended):* Ultra-fast Llama 3.3 70B inference with high throughput and instant free keys.
+  2. *Google Gemini Cloud:* Direct client support for Gemini 1.5/2.0 Flash and Pro keys with auto model sequencing.
   3. *On-Device Deterministic Engine:* Offline heuristic providing instant guidance without connectivity or credentials.
 * **Clean JSON Parser:** Automatically removes markdown backticks and prefaces returned by LLMs to prevent parsing crashes.
 
@@ -36,13 +40,13 @@ Tend is a daily habit and rhythm application rooted in Japanese *wabi-sabi* aest
 * **Adaptive Android Icons:** Full adaptive icon support (`mipmap-anydpi-v26`) with separate foreground emblem and background layers across all densities (mdpi to xxxhdpi), plus legacy and round icon support.
 * **iOS App Icons:** Generated complete iOS icon set matching App Store marketing specifications.
 
-### 4. Mindful Readings (Feed — Coming Soon)
+### 5. Mindful Readings (Feed — Coming Soon)
 * Serene placeholder reserved for curated contemplative essays and seasonal literature without social media clutter.
 
-### 5. Rhythm Circles (Network — Coming Soon)
+### 6. Rhythm Circles (Network — Coming Soon)
 * Quiet peer accountability and shared rhythm spaces currently being crafted for gentle companion presence without toxic leaderboards.
 
-### 6. Mindful Calendar & Ledger (Days)
+### 7. Mindful Calendar & Ledger (Days)
 * **Monthly Visual Grid:** Interactive calendar grid showing color-coded completion dots and mood indicators.
 * **Day Inspector:** Inspect completed rhythms and inner weather check-ins for any historical date.
 * **Reflections Journal:** Chronological journal stream displaying 7-day affective trends.
