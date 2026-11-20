@@ -1,0 +1,484 @@
+{
+  "$comment": "Tend Prototype — Complete JSON Schemas & Seed/Dummy Data Fixtures",
+  "version": "1.5.1",
+  "schemas": {
+    "AiCoachPromptResponse": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "title": "AiCoachPromptResponse",
+      "description": "Structured JSON contract returned by Groq Cloud and Google Gemini models",
+      "type": "object",
+      "required": ["message"],
+      "properties": {
+        "message": {
+          "type": "string",
+          "description": "Conversational, empathetic, grounded answer providing clear observations and actionable guidance."
+        },
+        "weekly_summary": {
+          "type": "object",
+          "properties": {
+            "completion_rate": {
+              "type": "string",
+              "description": "Percentage string (e.g. 80%)"
+            },
+            "highlight": {
+              "type": "string",
+              "description": "Key consistency achievement or strength observed"
+            },
+            "growth_area": {
+              "type": "string",
+              "description": "A gentle improvement focus or friction point"
+            }
+          }
+        },
+        "suggested_action": {
+          "type": "object",
+          "required": ["type", "title"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["create_habit", "modify_habit", "none"]
+            },
+            "target_habit_id": {
+              "type": ["string", "null"],
+              "description": "Existing habit ID if modifying, otherwise null"
+            },
+            "title": {
+              "type": "string",
+              "description": "Title of the new or modified rhythm"
+            },
+            "description": {
+              "type": ["string", "null"],
+              "description": "Short intention or reminder (under 60 chars)"
+            },
+            "frequency_type": {
+              "type": "string",
+              "enum": ["daily", "weekdays"]
+            },
+            "target_weekdays": {
+              "type": "array",
+              "items": { "type": "integer", "minimum": 1, "maximum": 7 }
+            },
+            "color_hex": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "reason": {
+              "type": "string",
+              "description": "Clear explanation of why this action is suggested based on data"
+            }
+          }
+        }
+      }
+    },
+    "CoachSession": {
+      "title": "CoachSession",
+      "type": "object",
+      "required": ["id", "title", "created_at", "updated_at", "messages"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" },
+        "updated_at": { "type": "string", "format": "date-time" },
+        "is_pinned": { "type": "boolean", "default": false },
+        "is_archived": { "type": "boolean", "default": false },
+        "messages": {
+          "type": "array",
+          "items": { "$ref": "#/schemas/CoachMessage" }
+        }
+      }
+    },
+    "CoachMessage": {
+      "title": "CoachMessage",
+      "type": "object",
+      "required": ["id", "sender", "text", "timestamp"],
+      "properties": {
+        "id": { "type": "string" },
+        "sender": { "type": "string", "enum": ["user", "coach"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" },
+        "action": { "$ref": "#/schemas/CoachAction" },
+        "metrics_summary": { "type": "object" }
+      }
+    },
+    "CoachAction": {
+      "title": "CoachAction",
+      "type": "object",
+      "required": ["id", "type", "title"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["createHabit", "modifyHabit", "none"] },
+        "target_habit_id": { "type": ["string", "null"] },
+        "title": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "frequency_type": { "type": "string", "enum": ["daily", "weekdays"] },
+        "target_weekdays": {
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "color_hex": { "type": "string" },
+        "reason": { "type": "string" },
+        "is_executed": { "type": "boolean", "default": false },
+        "is_dismissed": { "type": "boolean", "default": false }
+      }
+    },
+    "Habit": {
+      "title": "Habit",
+      "type": "object",
+      "required": ["id", "title", "frequencyType", "createdAt"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": ["string", "null"] },
+        "frequencyType": { "type": "string", "enum": ["daily", "weekdays"] },
+        "targetWeekdays": {
+          "type": "array",
+          "items": { "type": "integer" }
+        },
+        "colorHex": { "type": "string" },
+        "isArchived": { "type": "boolean", "default": false },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "HabitCompletion": {
+      "title": "HabitCompletion",
+      "type": "object",
+      "required": ["id", "habitId", "completedDate", "timestamp"],
+      "properties": {
+        "id": { "type": "string" },
+        "habitId": { "type": "string" },
+        "completedDate": { "type": "string", "format": "date-time" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "MoodEnergyCheckIn": {
+      "title": "MoodEnergyCheckIn",
+      "type": "object",
+      "required": ["id", "date", "moodScore", "energyScore"],
+      "properties": {
+        "id": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "moodScore": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "energyScore": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "note": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "FeedArticle": {
+      "title": "FeedArticle",
+      "type": "object",
+      "required": ["id", "title", "excerpt", "content", "author", "authorRole", "category", "readTimeMinutes", "publishedAt"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "string" },
+        "author": { "type": "string" },
+        "authorRole": { "type": "string" },
+        "category": { "type": "string", "enum": ["Stillness", "Rhythm", "Focus", "Rest"] },
+        "readTimeMinutes": { "type": "integer" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "isBookmarked": { "type": "boolean", "default": false }
+      }
+    },
+    "RhythmCircle": {
+      "title": "RhythmCircle",
+      "type": "object",
+      "required": ["id", "name", "philosophy", "category", "rhythmFocus", "memberCount", "weeklyConsistencyPercent", "createdAt", "members"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "philosophy": { "type": "string" },
+        "category": { "type": "string", "enum": ["Morning", "Focus", "Rest", "Creative"] },
+        "rhythmFocus": { "type": "string" },
+        "memberCount": { "type": "integer" },
+        "weeklyConsistencyPercent": { "type": "integer", "minimum": 0, "maximum": 100 },
+        "isJoined": { "type": "boolean", "default": false },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "members": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "avatarInitial", "currentRhythm", "tendedToday", "streakDays"],
+            "properties": {
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "avatarInitial": { "type": "string" },
+              "currentRhythm": { "type": "string" },
+              "tendedToday": { "type": "boolean" },
+              "streakDays": { "type": "integer" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "dummy_data": {
+    "habits": [
+      {
+        "id": "habit_morning_stillness",
+        "title": "Morning stillness",
+        "description": "5 minutes of quiet breath before devices",
+        "frequencyType": "daily",
+        "targetWeekdays": [1, 2, 3, 4, 5, 6, 7],
+        "colorHex": "#744127",
+        "isArchived": false,
+        "createdAt": "2026-11-01T07:00:00.000Z"
+      },
+      {
+        "id": "habit_evening_read",
+        "title": "Evening contemplative read",
+        "description": "10 pages of philosophy or essays",
+        "frequencyType": "weekdays",
+        "targetWeekdays": [1, 2, 3, 4, 5],
+        "colorHex": "#55614E",
+        "isArchived": false,
+        "createdAt": "2026-11-05T20:30:00.000Z"
+      },
+      {
+        "id": "habit_circadian_walk",
+        "title": "Natural light exposure",
+        "description": "20 min outdoor walk within 1h of waking",
+        "frequencyType": "daily",
+        "targetWeekdays": [1, 2, 3, 4, 5, 6, 7],
+        "colorHex": "#9C6644",
+        "isArchived": false,
+        "createdAt": "2026-11-10T08:00:00.000Z"
+      },
+      {
+        "id": "habit_screen_sundown",
+        "title": "Screen sundown",
+        "description": "All blue-light devices off by 10 PM",
+        "frequencyType": "daily",
+        "targetWeekdays": [1, 2, 3, 4, 5, 6, 7],
+        "colorHex": "#4A3B32",
+        "isArchived": true,
+        "createdAt": "2026-10-15T22:00:00.000Z"
+      }
+    ],
+    "habit_completions": [
+      {
+        "id": "comp_1",
+        "habitId": "habit_morning_stillness",
+        "completedDate": "2026-11-21T00:00:00.000Z",
+        "timestamp": "2026-11-21T07:15:22.000Z"
+      },
+      {
+        "id": "comp_2",
+        "habitId": "habit_circadian_walk",
+        "completedDate": "2026-11-21T00:00:00.000Z",
+        "timestamp": "2026-11-21T08:40:10.000Z"
+      },
+      {
+        "id": "comp_3",
+        "habitId": "habit_morning_stillness",
+        "completedDate": "2026-11-20T00:00:00.000Z",
+        "timestamp": "2026-11-20T07:08:44.000Z"
+      },
+      {
+        "id": "comp_4",
+        "habitId": "habit_evening_read",
+        "completedDate": "2026-11-20T00:00:00.000Z",
+        "timestamp": "2026-11-20T21:14:02.000Z"
+      }
+    ],
+    "mood_energy_checkins": [
+      {
+        "id": "checkin_20261121",
+        "date": "2026-11-21T00:00:00.000Z",
+        "moodScore": 4,
+        "energyScore": 3,
+        "tags": ["Stillness", "Nature"],
+        "note": "A quiet morning with crisp air. Felt steady throughout the morning walk.",
+        "createdAt": "2026-11-21T02:07:00.000Z"
+      },
+      {
+        "id": "checkin_20261120",
+        "date": "2026-11-20T00:00:00.000Z",
+        "moodScore": 3,
+        "energyScore": 4,
+        "tags": ["DeepWork"],
+        "note": "Focused day with productive coding hours. Mind felt slightly taxed by evening.",
+        "createdAt": "2026-11-20T19:30:00.000Z"
+      },
+      {
+        "id": "checkin_20261119",
+        "date": "2026-11-19T00:00:00.000Z",
+        "moodScore": 5,
+        "energyScore": 4,
+        "tags": ["Nature", "Sleep"],
+        "note": "Deep restorative rest. Woke up feeling peaceful and unhurried.",
+        "createdAt": "2026-11-19T08:15:00.000Z"
+      }
+    ],
+    "coach_sessions": [
+      {
+        "id": "session_sample_1",
+        "title": "Evening Rhythm Calibration",
+        "created_at": "2026-11-20T14:20:00.000Z",
+        "updated_at": "2026-11-20T14:23:45.000Z",
+        "is_pinned": true,
+        "is_archived": false,
+        "messages": [
+          {
+            "id": "msg_coach_welcome",
+            "sender": "coach",
+            "text": "Welcome to your mindful habit reflection space. I observe your rhythms, consistency patterns, and inner climate to help you tend to your days with patience and intention.",
+            "timestamp": "2026-11-20T14:20:00.000Z",
+            "action": null,
+            "metrics_summary": null
+          },
+          {
+            "id": "msg_user_prompt",
+            "sender": "user",
+            "text": "How consistent was I this week?",
+            "timestamp": "2026-11-20T14:21:10.000Z",
+            "action": null,
+            "metrics_summary": null
+          },
+          {
+            "id": "msg_coach_reply",
+            "sender": "coach",
+            "text": "Your weekly rhythm consistency stands at 82%. You showed commendable dedication to 'Morning stillness', maintaining an unbroken 5-day streak.\n\nYour inner climate shows steady groundedness (average mood 4.0/5), though energy levels naturally tapered toward mid-week. Consider protecting your evening transition with a gentle wind-down rhythm.",
+            "timestamp": "2026-11-20T14:21:12.000Z",
+            "metrics_summary": {
+              "completion_rate": "82%",
+              "highlight": "5-day streak on Morning stillness",
+              "growth_area": "Evening wind-down regularity"
+            },
+            "action": {
+              "id": "act_evening_winddown",
+              "type": "createHabit",
+              "target_habit_id": null,
+              "title": "Evening tea & stillness",
+              "description": "5 min quiet sitting without screens",
+              "frequency_type": "daily",
+              "target_weekdays": [1, 2, 3, 4, 5, 6, 7],
+              "color_hex": "#744127",
+              "reason": "Restores evening margins and cushions energy recovery",
+              "is_executed": false,
+              "is_dismissed": false
+            }
+          }
+        ]
+      }
+    ],
+    "feed_articles": [
+      {
+        "id": "article_1",
+        "title": "The Architecture of Stillness: Why 5-Minute Pauses Anchor Habits",
+        "excerpt": "When we rush between demands, our nervous system remains in high friction. Micro-pauses restore the baseline needed to sustain intentional action.",
+        "content": "Most habit failures are not failures of willpower; they are failures of physiological margin. When we schedule our days with back-to-back demands, our cognitive load spikes, and the default response to any newly introduced rhythm is immediate resistance.\n\nIn Japanese aesthetics, 'Ma' represents the negative space—the silent interval between notes that gives music its beauty. In behavioral psychology, micro-stillness serves an identical purpose.\n\nBy carving out 3 to 5 minutes of deliberate inaction before beginning your chosen rhythm, you signal to your prefrontal cortex that you are acting from autonomy rather than reaction.\n\nTry this tomorrow: Before opening your notebook or tying your walking shoes, sit by a window without a screen for exactly 180 seconds. Observe your breath. Notice how the activation energy required to begin plummets once the mental chatter subsides.",
+        "author": "Elena Vance",
+        "authorRole": "Mindful Behaviorist",
+        "category": "Stillness",
+        "readTimeMinutes": 3,
+        "publishedAt": "2026-11-15T00:00:00.000Z",
+        "isBookmarked": true
+      },
+      {
+        "id": "article_2",
+        "title": "Friction & Grace: Reducing Activation Energy for Morning Routines",
+        "excerpt": "Willpower is an exhaustible fuel. Sustainable rhythms rely instead on physical environments arranged with gentle anticipation.",
+        "content": "The easiest way to preserve a rhythm is to make non-compliance slightly more troublesome than adherence. In ergonomics, this is known as managing friction vectors.\n\nIf your intention is morning stillness or stretching, place your mat beside your bed before sleeping. If your goal is reading 10 pages of prose, leave your book resting directly on your morning tea mug.\n\nConversely, introduce gentle friction to destructive compulsive loops. Charge your handheld device across the room or outside the bed chamber entirely.\n\nTend approaches habits with grace: when an obstacle arises, we do not blame ourselves. We simply inspect the physical room and adjust the friction until movement feels natural and unforced.",
+        "author": "Marcus Chen",
+        "authorRole": "Architectural Ergonomist",
+        "category": "Rhythm",
+        "readTimeMinutes": 4,
+        "publishedAt": "2026-11-14T00:00:00.000Z",
+        "isBookmarked": false
+      },
+      {
+        "id": "article_3",
+        "title": "The Circadian Reset: Morning Light as an Organic Alarm",
+        "excerpt": "Before coffee, before checking notifications, direct natural sunlight anchors your internal master clock and regulates nocturnal melatonin.",
+        "content": "The suprachiasmatic nucleus (SCN) in your hypothalamus is biological hardware tuned to photon intensity. Fluorescent lighting or smartphone glass does not emit sufficient lux to signal a full biological dawn.\n\nViewing natural outdoor light within thirty minutes of waking triggers a timed cortisol release that sharpens attention, lifts mood, and initiates a countdown timer for melatonin synthesis 14 hours later.",
+        "author": "Dr. Sarah Lin",
+        "authorRole": "Circadian Neurobiologist",
+        "category": "Rest",
+        "readTimeMinutes": 5,
+        "publishedAt": "2026-11-10T00:00:00.000Z",
+        "isBookmarked": false
+      }
+    ],
+    "rhythm_circles": [
+      {
+        "id": "circle_dawn_walkers",
+        "name": "Dawn Walkers",
+        "philosophy": "Greeting first light without screens, pacing our breath with the waking earth.",
+        "category": "Morning",
+        "rhythmFocus": "20m Morning walk / light exposure",
+        "memberCount": 9,
+        "weeklyConsistencyPercent": 88,
+        "isJoined": true,
+        "createdAt": "2026-10-01T00:00:00.000Z",
+        "members": [
+          {
+            "id": "m1",
+            "name": "Elena",
+            "avatarInitial": "E",
+            "currentRhythm": "Morning walk",
+            "tendedToday": true,
+            "streakDays": 6
+          },
+          {
+            "id": "m2",
+            "name": "Julian",
+            "avatarInitial": "J",
+            "currentRhythm": "Sunrise breathing",
+            "tendedToday": true,
+            "streakDays": 14
+          },
+          {
+            "id": "m3",
+            "name": "Soren",
+            "avatarInitial": "S",
+            "currentRhythm": "15m Park stroll",
+            "tendedToday": false,
+            "streakDays": 4
+          },
+          {
+            "id": "m4",
+            "name": "Aria",
+            "avatarInitial": "A",
+            "currentRhythm": "Morning sunlight",
+            "tendedToday": true,
+            "streakDays": 9
+          }
+        ]
+      },
+      {
+        "id": "circle_deep_work",
+        "name": "Deep Work Sanctuary",
+        "philosophy": "Protecting long stretches of uninterrupted creative immersion and craft.",
+        "category": "Focus",
+        "rhythmFocus": "90m Monotasking deep work block",
+        "memberCount": 14,
+        "weeklyConsistencyPercent": 79,
+        "isJoined": false,
+        "createdAt": "2026-10-12T00:00:00.000Z",
+        "members": [
+          {
+            "id": "m5",
+            "name": "Taro",
+            "avatarInitial": "T",
+            "currentRhythm": "Thesis drafting",
+            "tendedToday": true,
+            "streakDays": 8
+          },
+          {
+            "id": "m6",
+            "name": "Kiran",
+            "avatarInitial": "K",
+            "currentRhythm": "System architecture",
+            "tendedToday": false,
+            "streakDays": 3
+          }
+        ]
+      }
+    ]
+  }
+}
